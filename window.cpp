@@ -17,9 +17,22 @@ typedef struct point {
 } point;
 
 
+typedef struct pix_coord {
+	int x,y;
+} pix_coord;
+
+
+typedef struct viewport {
+	typedef point angle;
+	angle theta;
+	double zoom;
+} viewport;
+
+
 int win_width = 900;
 int win_height = 500;
-bool mouse_pressed = false; // Boolean to monitor when mouse is pressed
+bool mouse_left_pressed = false; // Boolean to monitor when mouse is pressed
+pix_coord mouse_left_press = {0, 0};
 
 
 /* Main method */
@@ -69,7 +82,10 @@ int main() {
 						
 						// Left Button Pressed
 						case sf::Mouse::Left:
-							// TODO
+							mouse_left_pressed=true;
+							cout << "start: " << mouse_left_press.x << endl;
+							mouse_left_press.x = event.mouseButton.x;
+							mouse_left_press.y = event.mouseButton.y;
 							break;
 							
 						// Right Button Pressed
@@ -90,7 +106,13 @@ int main() {
 						
 						// Left Button Pressed
 						case sf::Mouse::Left:
-							// TODO
+							mouse_left_pressed=false;
+							cout << "start: " << mouse_left_press.x << endl;
+							cout << "end:   " << event.mouseButton.x << endl;
+							cout << event.mouseButton.x - mouse_left_press.x << endl;
+							circ1.setPosition(
+								p1.x+event.mouseButton.x - mouse_left_press.x,
+								p1.y);
 							break;
 							
 						// Right Button Pressed
@@ -103,6 +125,11 @@ int main() {
 							// Won't be processed
 							break;
 					} //END: event.mouseButton.button
+					break;
+
+				// Mouse Moved
+				case sf::Event::MouseMoved:
+					
 					break;
 
 				// Default event.type
