@@ -1,3 +1,0 @@
-#!/bin/bash
-g++ -c window.cpp && \
-g++ window.o -o window -lsfml-graphics -lsfml-window -lsfml-system
