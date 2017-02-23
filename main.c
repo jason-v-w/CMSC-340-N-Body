@@ -1,11 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include "bodies.h"
 
 // double time_step = 0.1; //all units are given in base SI
-// int num_bodies = 2;
+int numBodies = 3;
 pthread_mutex_t mutex;
+body *currentBodies;
+body *computingBodies;
 
 typedef struct pair {
   int a, b;
@@ -19,9 +22,25 @@ int main () {
   //initialize mutex
   pthread_mutex_init(&mutex, NULL);
   
-  for (int i=0; i<6; ++i) {
-     pair p = getNextBodySet(3);
+  //get memory space
+  //TODO: handle error condition
+  currentBodies = (body*)malloc(sizeof(body) * numBodies);
+  
+  
+  //get memory space
+  //TODO: handle error condition
+  computingBodies = (body*)malloc(sizeof(body) * numBodies);
+  
+  
+  
+  
+  
+  
+  
+  for (int i=0; i<8; ++i) {
+     pair p = getNextBodySet(numBodies);
      printf("<%d, %d>\n", p.a, p.b);
+     fflush(stdout);
   }
 //   body b0 = {0,  0,0,0, -1,0,200,1};
 //   body b1 = {142,0,0,0,140,0, 10,1};
@@ -59,27 +78,51 @@ int main () {
 
 pair getNextBodySet(int numBodies) {
     pair p;
+    int static finished = 0;
   
     //guard with mutex
     pthread_mutex_lock(&mutex);
     
-    static int i = 0;
-    static int j = 0;
-    
-    if (j==i) {
-      ++i;
-      j=0;
+    if (finished==0) {
+      static int i = 0;
+      static int j = 0;
+      
+      if (j==i) {
+	++i;
+	j=0;
+      }
+      
+      //store return value
+      p.a = i;
+      p.b = j;
+      
+      ++j;
+      
+      //release mutex
+      pthread_mutex_unlock(&mutex);
+      
+      if (i==numBodies) {
+	finished = 1;
+      }
     }
     
-    //store return value
-    p.a = i;
-    p.b = j;
+    if (finished) {
+      p.a = -1;
+      p.b = -1;
+    }
     
-    ++j;
-    
-    //release mutex
-    pthread_mutex_unlock(&mutex);
-    
-    //return stored value
     return p;
+}
+
+
+void* threadJob(void) {
+  pair p;
+  
+  while (1) {
+    p = getNextBodySet(numBodies);
+    if (p.a == -1 && p.b == -1) {
+     //kill this thread 
+    }
+  }
+  
 }
