@@ -1,2 +1,2 @@
 firstmake: bodies.c testing.c
-	gcc -o exe bodies.c testing.c -I.
+	gcc -o app bodies.c testing.c -lm -I.
