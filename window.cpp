@@ -7,8 +7,9 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sstream>
+#define NUM_BODIES 2
 
-double time_step = 10; //all units are given in base SI
+double time_step = 0.1; //all units are given in base SI
 int num_bodies = 2;
 
 using namespace std;
@@ -24,11 +25,22 @@ typedef struct point {
 
 extern "C" {
   #include "bodies.h"
+  /* Given a vector3D, the vector magnitude is returned
+  * 
+  * @author Jason Vander Woude
+  */
   double getMagnitude(vector3D vec) {
     return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
   }
+
+
+  /* Given two bodies, the force on body 1 from body 2 will be returned in a force struct
+  * 
+  * @author Jason Vander Woude
+  */
   vector3D getForce(body bodyOn, body bodyFrom) {
     static const double G = 0.00000000006674; //6.674e−11
+    //static const double G = 1; //6.674e−11
     vector3D p, f;
     double pseudoMagnitude;
     
@@ -36,7 +48,8 @@ extern "C" {
     p.y = bodyFrom.pos.y - bodyOn.pos.y;
     p.z = bodyFrom.pos.z - bodyOn.pos.z;
     
-    pseudoMagnitude = -1 * G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
+    pseudoMagnitude = 1 * G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
+    printf("\tpseudoMag: %16.14f\n", pseudoMagnitude);
     
     f.x = pseudoMagnitude * p.x;
     f.y = pseudoMagnitude * p.y;
@@ -44,6 +57,12 @@ extern "C" {
     
     return f;
   }
+
+
+  /* Given a body and the total force vector acting on it the acceleration vector will be returned
+  * 
+  * @author Jason Vander Woude
+  */
   vector3D getAcceleration(body body, vector3D force) {
     //a = F/m
     vector3D a;
@@ -54,6 +73,12 @@ extern "C" {
     
     return a;
   }
+
+
+  /* Given a vector, the opposite vector will be returned
+  * 
+  * @author Jason Vander Woude
+  */
   vector3D negateVector3D(vector3D vec) {
     vector3D v;
     v.x = -vec.x;
@@ -61,6 +86,12 @@ extern "C" {
     v.z = -vec.z;
     return v;
   }
+
+
+  /* Given two vectors, the sum will be returned
+  * 
+  * @author Jason Vander Woude
+  */
   vector3D vector3DSum(vector3D a, vector3D b) {
     vector3D sum;
     sum.x = a.x + b.x;
@@ -68,6 +99,12 @@ extern "C" {
     sum.z = a.z + b.z;
     return sum;
   }
+
+
+  /* Given a vector and scalar, the scaled vector will be returned
+  * 
+  * @author Jason Vander Woude
+  */
   vector3D vector3DScale(vector3D vec, double scale) {
     vector3D v;
     v.x = vec.x * scale;
@@ -97,54 +134,58 @@ int main() {
 	window.setView(view);
 	
 	
-	body b0 = {0,  0,0,0, -1,0,200,1};
-	body b1 = {142,0,0,0,140,0, 10,1};
+	sf::CircleShape circ1(50); circ1.setFillColor(sf::Color(100, 250, 50));
+	sf::CircleShape circ2(10); circ2.setFillColor(sf::Color(255, 0, 50));
+	
+	
+	body b0 = {0,  0,0   ,0, -1,0,   20000000000000000,1};
+	body b1 = {142,0,0   ,0,14,0,      1000000000000000,1};
+	
+	printf("mass: %f\n", b1.mass);
 	
 	body currentBodies[] = {b0, b1};
-	body computingBodies[] = {b0, b1};
+	body computingBodies[NUM_BODIES];
+	memcpy((void*)computingBodies, (void*)currentBodies, sizeof(body)*NUM_BODIES);    
+	printf("1: (%f, %f), <%f, %f>\n", currentBodies[1].pos.x, currentBodies[1].pos.y, currentBodies[1].vel.x, currentBodies[1].vel.y);
+	  
 	
 	
 	double time = 0;
 	while (1) {
-	  body body0 = currentBodies[0];
-	  body body1 = currentBodies[1];
-	  body newBody0 = computingBodies[0];
-	  body newBody1 = computingBodies[1];
+	  //printf("0: (%f, %f), <%f, %f>\n", currentBodies[0].pos.x, currentBodies[0].pos.y, currentBodies[0].vel.x, currentBodies[0].vel.y);
+	  //printf("1: (%f, %f), <%f, %f>\n", currentBodies[1].pos.x, currentBodies[1].pos.y, currentBodies[1].vel.x, currentBodies[1].vel.y);
 	  
-	  vector3D force = getForce(body0, body1);
+	  vector3D force = getForce(currentBodies[0], currentBodies[1]);
+	  printf("\tforce: [%f, %f, %f]\n", force.x, force.y, force.z);
 	  
-	  vector3D accel0 = getAcceleration(body0, force);
-	  vector3D accel1 = getAcceleration(body0, negateVector3D(force));
+	  vector3D accel0 = getAcceleration(currentBodies[0], force);
+	  vector3D accel1 = getAcceleration(currentBodies[1], negateVector3D(force));
+	  printf("\taccel: [%f, %f, %f]\n", accel1.x, accel1.y, accel1.z);
 	  
-	  newBody0.vel = vector3DSum(body0.vel, vector3DScale(accel0, time_step));
-	  newBody1.vel = vector3DSum(body1.vel, vector3DScale(accel1, time_step));
+	  computingBodies[0].vel = vector3DSum(currentBodies[0].vel, vector3DScale(accel0, time_step));
+	  computingBodies[1].vel = vector3DSum(currentBodies[1].vel, vector3DScale(accel1, time_step));
 	  
-	  newBody0.pos = vector3DSum(body0.pos, vector3DScale(body0.vel, time_step));
-	  newBody1.pos = vector3DSum(body1.pos, vector3DScale(body1.vel, time_step));
+	  computingBodies[0].pos = vector3DSum(currentBodies[0].pos, vector3DScale(currentBodies[0].vel, time_step));
+	  computingBodies[1].pos = vector3DSum(currentBodies[1].pos, vector3DScale(currentBodies[1].vel, time_step));
 	  
+	  // copy contents of computingBodies into currentBodies
+	  memcpy((void*)currentBodies, (void*)computingBodies, sizeof(body)*NUM_BODIES);
+	  printf("1: (%f, %f), <%f, %f>\n", currentBodies[1].pos.x, currentBodies[1].pos.y, currentBodies[1].vel.x, currentBodies[1].vel.y);
 	  
-	  // Create 4 circles
-	  sf::CircleShape circ1(5);
-	  sf::CircleShape circ2(20);
-	  
-	  circ1.setFillColor(sf::Color(100, 250, 50));
-	  circ2.setFillColor(sf::Color(100, 250, 50));
-	  
-	  circ1.setPosition(newBody0.pos.x, newBody0.pos.y);
-	  circ1.setPosition(newBody1.pos.x, newBody1.pos.y);
-	  
+	  circ1.setPosition(sf::Vector2f(currentBodies[0].pos.x/2, currentBodies[0].pos.y/2));
+	  circ2.setPosition(sf::Vector2f(currentBodies[1].pos.x/2, currentBodies[1].pos.y/2));
 	  window.clear();
 	  window.draw(circ1);
 	  window.draw(circ2);
 	  window.display();
 	  
 	  
-	  // copy contents of computingBodies into currentBodies
-	  memcpy((void*)currentBodies, (void*)computingBodies, sizeof(body)*num_bodies);
+	  usleep(1000000*time_step);
+	  
+
 	  
 	  // increment time
 	  time += time_step;
-	  usleep(10000);
 	}
 	
 	

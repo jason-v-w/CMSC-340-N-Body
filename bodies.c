@@ -1,5 +1,6 @@
 #include <math.h>
 #include "bodies.h"
+#include <stdio.h>
 
 
 /* Given a vector3D, the vector magnitude is returned
@@ -17,6 +18,7 @@ double getMagnitude(vector3D vec) {
  */
 vector3D getForce(body bodyOn, body bodyFrom) {
   static const double G = 0.00000000006674; //6.674e−11
+  //static const double G = 1; //6.674e−11
   vector3D p, f;
   double pseudoMagnitude;
   
@@ -24,7 +26,8 @@ vector3D getForce(body bodyOn, body bodyFrom) {
   p.y = bodyFrom.pos.y - bodyOn.pos.y;
   p.z = bodyFrom.pos.z - bodyOn.pos.z;
   
-  pseudoMagnitude = -1 * G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
+  pseudoMagnitude = 1 * G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
+  printf("\tpseudoMag: %16.14f\n", pseudoMagnitude);
   
   f.x = pseudoMagnitude * p.x;
   f.y = pseudoMagnitude * p.y;
