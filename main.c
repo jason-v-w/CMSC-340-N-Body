@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 #include "bodies.h"
 
 // double time_step = 0.1; //all units are given in base SI
 // int num_bodies = 2;
+pthread_mutex_t mutex;
 
 typedef struct pair {
   int a, b;
@@ -14,6 +16,9 @@ pair getNextBodySet(int numBodies);
 
 
 int main () {
+  //initialize mutex
+  pthread_mutex_init(&mutex, NULL);
+  
   for (int i=0; i<6; ++i) {
      pair p = getNextBodySet(3);
      printf("<%d, %d>\n", p.a, p.b);
@@ -56,6 +61,8 @@ pair getNextBodySet(int numBodies) {
     pair p;
   
     //guard with mutex
+    pthread_mutex_lock(&mutex);
+    
     static int i = 0;
     static int j = 0;
     
@@ -69,7 +76,9 @@ pair getNextBodySet(int numBodies) {
     p.b = j;
     
     ++j;
+    
     //release mutex
+    pthread_mutex_unlock(&mutex);
     
     //return stored value
     return p;
