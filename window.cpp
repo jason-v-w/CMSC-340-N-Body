@@ -9,7 +9,7 @@
 #include <sstream>
 #define NUM_BODIES 2
 
-double time_step = 0.1; //all units are given in base SI
+double time_step = 0.001; //all units are given in base SI
 int num_bodies = 2;
 
 using namespace std;
@@ -134,12 +134,15 @@ int main() {
 	window.setView(view);
 	
 	
-	sf::CircleShape circ1(50); circ1.setFillColor(sf::Color(100, 250, 50));
-	sf::CircleShape circ2(10); circ2.setFillColor(sf::Color(255, 0, 50));
+	sf::CircleShape circ1(5); circ1.setFillColor(sf::Color(100, 250, 50));
+	sf::CircleShape circ2(5); circ2.setFillColor(sf::Color(255, 0, 50));
 	
+
+	body b0 = {0,  0,0   ,0, 100, 0,   200000000000000000,1};
+	body b1 = {160,0,0   ,0,-90,0,        100000000000000,1};
 	
-	body b0 = {0,  0,0   ,0, -1,0,   20000000000000000,1};
-	body b1 = {142,0,0   ,0,14,0,      1000000000000000,1};
+	//body b0 = {0,     0,0   ,0, 0, 0,       5972200000000000000000000,1}; //earth
+	//body b1 = {384400000,0,0   ,0,10,0,     73477000000000000000000,1}; //moon
 	
 	printf("mass: %f\n", b1.mass);
 	
@@ -172,17 +175,28 @@ int main() {
 	  memcpy((void*)currentBodies, (void*)computingBodies, sizeof(body)*NUM_BODIES);
 	  printf("1: (%f, %f), <%f, %f>\n", currentBodies[1].pos.x, currentBodies[1].pos.y, currentBodies[1].vel.x, currentBodies[1].vel.y);
 	  
-	  circ1.setPosition(sf::Vector2f(currentBodies[0].pos.x/2, currentBodies[0].pos.y/2));
-	  circ2.setPosition(sf::Vector2f(currentBodies[1].pos.x/2, currentBodies[1].pos.y/2));
-	  window.clear();
+	  circ1.setPosition(sf::Vector2f(currentBodies[0].pos.x/10, currentBodies[0].pos.y/10));
+	  circ2.setPosition(sf::Vector2f(currentBodies[1].pos.x/10, currentBodies[1].pos.y/10));
+	  //window.clear();
 	  window.draw(circ1);
 	  window.draw(circ2);
 	  window.display();
 	  
 	  
-	  usleep(1000000*time_step);
+	  usleep(100);
 	  
-
+	  sf::Event event;
+	  while (window.pollEvent(event)) {
+	    switch (event.type) {
+	      // Window closed
+	      case sf::Event::Closed:
+		      exit(0);
+		      window.close();
+		      break;
+	      default:
+		break;
+	    }
+	  }
 	  
 	  // increment time
 	  time += time_step;
