@@ -2,7 +2,6 @@
 #include "bodies.h"
 
 
-
 /* Given a vector3D, the vector magnitude is returned
  * 
  * @author Jason Vander Woude
@@ -48,4 +47,43 @@ vector3D getAcceleration(body body, vector3D force) {
   a.z = force.z / body.mass;
   
   return a;
+}
+
+
+/* Given a vector, the opposite vector will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D negateVector3D(vector3D vec) {
+  vector3D v;
+  v.x = -vec.x;
+  v.y = -vec.y;
+  v.z = -vec.z;
+  return v;
+}
+
+
+/* Given two vectors, the sum will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D vector3DSum(vector3D a, vector3D b) {
+  vector3D sum;
+  sum.x = a.x + b.x;
+  sum.y = a.y + b.y;
+  sum.z = a.z + b.z;
+  return sum;
+}
+
+
+/* Given a vector and scalar, the scaled vector will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D vector3DScale(vector3D vec, double scale) {
+  vector3D v;
+  v.x = vec.x * scale;
+  v.y = vec.y * scale;
+  v.z = vec.z * scale;
+  return v;
 }

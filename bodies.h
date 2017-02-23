@@ -35,4 +35,25 @@ vector3D getForce(body bodyOn, body bodyFrom);
  */
 vector3D getAcceleration(body body, vector3D force);
 
+
+/* Given a vector, the opposite vector will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D negateVector3D(vector3D vec);
+
+
+/* Given two vectors, the sum will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D vector3DSum(vector3D a, vector3D b);
+
+
+/* Given a vector and scalar, the scaled vector will be returned
+ * 
+ * @author Jason Vander Woude
+ */
+vector3D vector3DScale(vector3D vec, double scale);
+
 #endif //BODIES_H
