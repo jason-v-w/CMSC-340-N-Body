@@ -10,23 +10,14 @@
 
 using namespace std;
 
-
-// define a struct used to hold a 3D point
-typedef struct point {
-   double x,y,z;
-} point;
-
-
 typedef struct pix_coord {
-	int x,y;
+  int x,y;
 } pix_coord;
 
+typedef struct point {
+  double x,y,z;
+} point;
 
-typedef struct viewport {
-	typedef point angle;
-	angle theta;
-	double zoom;
-} viewport;
 
 
 int win_width = 900;
@@ -65,6 +56,10 @@ int main() {
 	sf::RenderWindow window(sf::VideoMode(win_width, win_height), 
 	                        "N-Body", 
 	                        sf::Style::Close|sf::Style::Titlebar);
+	
+	sf::View view(sf::FloatRect(0, 0, win_width, win_height));
+	
+	window.setView(view);
 	
 	while (window.isOpen()) {
 		sf::Event event;
