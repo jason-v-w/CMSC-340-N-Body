@@ -27,8 +27,8 @@ typedef struct pair {
 pair getNextBodySet();
 int getNextBody();
 void clearForces();
-void* findForces(void);
-void* updatePosAndVels(void);
+void* updateForces();
+void* updatePosAndVels();
 
 
 /* Main method
@@ -44,30 +44,62 @@ int main () {
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   
+  bodies[0].pos.x = 0;
+  bodies[0].pos.y = 0;
+  bodies[0].pos.z = 0;
+  bodies[0].vel.x = 0;
+  bodies[0].vel.y = -1;
+  bodies[0].vel.z = 0;
+  bodies[0].mass = 200000000;
+  bodies[0].density = 1;
+  
+  bodies[1].pos.x = 142;
+  bodies[1].pos.y = 0;
+  bodies[1].pos.z = 0;
+  bodies[1].vel.x = 0;
+  bodies[1].vel.y = 140;
+  bodies[1].vel.z = 0;
+  bodies[1].mass = 10000000;
+  bodies[1].density = 1;
+  
+  bodies[2].pos.x = -142;
+  bodies[2].pos.y = 0;
+  bodies[2].pos.z = 0;
+  bodies[2].vel.x = 0;
+  bodies[2].vel.y = 140;
+  bodies[2].vel.z = 0;
+  bodies[2].mass = 10000000;
+  bodies[2].density = 1;
+  
+  printf("1:\n");
+  for (int i=0; i<numBodies; ++i) {
+    printf("<%f, %f, %f>\n", forces[i].x, forces[i].y, forces[i].z);
+    fflush(stdout);
+  }
+  
+  
+  
 //   while (1) {
 //     
-//     // set all forces to 0
-//     clearForces();
-//     
-//     // initialize all threads
-//     pthread_t threads[NUM_THREADS];
-//     for (int t=0; t<NUM_THREADS; ++t) {
-//       pthread_create(&(threads[t]), NULL, findForces, NULL);
-//     }
-//     
-//     // block on thread completion
-//     for (int t=0; t<NUM_THREADS; ++t) {
-//       pthread_join(threads[t], NULL);
-//     }
+    // set all forces to 0
+    clearForces();
+    
+    // initialize all threads
+    pthread_t threads[NUM_THREADS];
+    for (int t=0; t<NUM_THREADS; ++t) {
+      pthread_create(&(threads[t]), NULL, updateForces, NULL);
+    }
+    
+    // block on thread completion
+    for (int t=0; t<NUM_THREADS; ++t) {
+      pthread_join(threads[t], NULL);
+    }
 //     
 //   } //END: while (1)
   
-  clearForces();
   
+  printf("2:\n");
   for (int i=0; i<numBodies; ++i) {
-     //pair p = getNextBodySet();
-     //printf("<%d, %d>\n", p.a, p.b);
-    //int b = getNextBody();
     printf("<%f, %f, %f>\n", forces[i].x, forces[i].y, forces[i].z);
     fflush(stdout);
   }
@@ -170,7 +202,7 @@ void clearForces() {
 }
 
 
-void *findForces(void) {
+void *updateForces() {
   pair p;
   
   while (1) {
