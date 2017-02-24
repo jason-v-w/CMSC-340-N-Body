@@ -1,3 +1,3 @@
-firstmake: bodies.c testing.c
+firstmake: bodies.c main.c
 	gcc -o app bodies.c main.c -lm -I.
 	
