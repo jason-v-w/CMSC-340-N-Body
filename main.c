@@ -4,43 +4,71 @@
 #include <stdlib.h>
 #include "bodies.h"
 
-// double time_step = 0.1; //all units are given in base SI
-int numBodies = 3;
-pthread_mutex_t mutex;
-body *currentBodies;
-body *computingBodies;
 
+// define constants
+#define NUM_THREADS 40
+
+
+// define globals
+double           time_step = 0.1; //all units are given in base SI
+int              numBodies = 3;
+pthread_mutex_t  mutex;
+body            *bodies;
+vector3D        *forces;
+
+
+// define structs
 typedef struct pair {
   int a, b;
 } pair;
 
 
-pair getNextBodySet(int numBodies);
+// forward declarations
+pair getNextBodySet();
+int getNextBody();
+void clearForces();
+void* findForces(void);
+void* updatePosAndVels(void);
 
 
+/* Main method
+ * 
+ * @author Ethan Brummel, Garth Van Donselaar, Jason Vander Woude
+ */
 int main () {
   //initialize mutex
   pthread_mutex_init(&mutex, NULL);
   
   //get memory space
   //TODO: handle error condition
-  currentBodies = (body*)malloc(sizeof(body) * numBodies);
+  bodies = (body*)malloc(sizeof(body) * numBodies);
+  forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   
-  
-  //get memory space
-  //TODO: handle error condition
-  computingBodies = (body*)malloc(sizeof(body) * numBodies);
-  
-  
-  
-  
-  
+//   while (1) {
+//     
+//     // set all forces to 0
+//     clearForces();
+//     
+//     // initialize all threads
+//     pthread_t threads[NUM_THREADS];
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_create(&(threads[t]), NULL, findForces, NULL);
+//     }
+//     
+//     // block on thread completion
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_join(threads[t], NULL);
+//     }
+//     
+//   } //END: while (1)
   
   
   for (int i=0; i<8; ++i) {
-     pair p = getNextBodySet(numBodies);
-     printf("<%d, %d>\n", p.a, p.b);
-     fflush(stdout);
+     //pair p = getNextBodySet();
+     //printf("<%d, %d>\n", p.a, p.b);
+    int b = getNextBody();
+    printf("%d\n", b);
+    fflush(stdout);
   }
 //   body b0 = {0,  0,0,0, -1,0,200,1};
 //   body b1 = {142,0,0,0,140,0, 10,1};
@@ -76,11 +104,12 @@ int main () {
 }
 
 
-pair getNextBodySet(int numBodies) {
+pair getNextBodySet() {
     pair p;
     int static finished = 0;
   
     //guard with mutex
+    //TODO: check if mutex can be locked later
     pthread_mutex_lock(&mutex);
     
     if (finished==0) {
@@ -98,9 +127,6 @@ pair getNextBodySet(int numBodies) {
       
       ++j;
       
-      //release mutex
-      pthread_mutex_unlock(&mutex);
-      
       if (i==numBodies) {
 	finished = 1;
       }
@@ -110,19 +136,75 @@ pair getNextBodySet(int numBodies) {
       p.a = -1;
       p.b = -1;
     }
+      
+    //release mutex
+    //TODO: check if mutex can be released earlier
+    pthread_mutex_unlock(&mutex);
     
     return p;
 }
 
 
-void* threadJob(void) {
+int getNextBody() {
+  pthread_mutex_lock(&mutex);
+    static int b = -1;
+    static int finished = 0;
+    ++b;
+    if (b==numBodies)
+      finished = 1;
+    if (finished==1)
+      b = -1;
+  pthread_mutex_unlock(&mutex);
+  
+  return b;
+}
+
+
+void clearForces() {
+  for (int i=0; i<numBodies; ++i) {
+    forces[i].x = 0;
+    forces[i].y = 0;
+    forces[i].z = 0;
+  }
+}
+
+
+void *findForces(void) {
   pair p;
   
   while (1) {
-    p = getNextBodySet(numBodies);
+    p = getNextBodySet();
     if (p.a == -1 && p.b == -1) {
-     //kill this thread 
+      // kill this thread
+      pthread_exit(NULL);
+    } else {
+      // compute interaction forces between body A and body B
+      vector3D forceOnA = getForce(bodies[p.a], bodies[p.b]);
+      vector3D forceOnB = negateVector3D(forceOnA);
+      
+      // add the respective forces to the running total forces
+      forces[p.a] = vector3DSum(forces[p.a], forceOnA);
+      forces[p.b] = vector3DSum(forces[p.b], forceOnB);
     }
   }
-  
 }
+
+
+void *updatePosAndVels(void) {
+  pair p;
+  
+  while (1) {
+    p = getNextBodySet();
+    if (p.a == -1 && p.b == -1) {
+      // kill this thread
+      pthread_exit(NULL);
+    } else {
+      vector3D accelOfA = getAcceleration(bodies[p.a], forces[p.a]);
+      vector3D accelOfB = getAcceleration(bodies[p.b], forces[p.b]);
+    }
+  }
+}
+
+
+
+
