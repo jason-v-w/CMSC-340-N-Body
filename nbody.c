@@ -6,8 +6,8 @@
 extern body *bodies;
 extern double timeStep;
 
-pair getNextBodySet(pthread_mutex_t mutex) {
-    pair p;
+intPair getNextBodySet(pthread_mutex_t mutex) {
+    intPair p;
     int static finished = 0;
   
     //guard with mutex
@@ -72,7 +72,7 @@ void clearForces() {
 
 
 void *updateForces(void *vMutex) {
-  pair p;
+  intPair p;
   
   while (1) {
     p = getNextBodySet(*((pthread_mutex_t*)vMutex));

@@ -8,13 +8,13 @@ extern int numBodies;
 extern vector3D *forces;
 
 // define structs
-typedef struct pair {
+typedef struct intPair {
   int a, b;
-} pair;
+} intPair;
 
 
 // define functions
-pair getNextBodySet(pthread_mutex_t mutex);
+intPair getNextBodySet(pthread_mutex_t mutex);
 int getNextBody(pthread_mutex_t mutex);
 void clearForces();
 void *updateForces();
