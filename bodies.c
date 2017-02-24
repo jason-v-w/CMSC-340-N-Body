@@ -16,7 +16,7 @@ double getMagnitude(vector3D vec) {
  * @author Jason Vander Woude
  */
 vector3D getForce(body bodyOn, body bodyFrom) {
-  static const double G = 0.00000000006674; //6.674e−11
+  static const double G = 0.0000000000667428; //6.674e−11
   vector3D p, f;
   double pseudoMagnitude;
   
