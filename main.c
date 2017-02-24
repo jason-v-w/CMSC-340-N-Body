@@ -62,12 +62,13 @@ int main () {
 //     
 //   } //END: while (1)
   
+  clearForces();
   
-  for (int i=0; i<8; ++i) {
+  for (int i=0; i<numBodies; ++i) {
      //pair p = getNextBodySet();
      //printf("<%d, %d>\n", p.a, p.b);
-    int b = getNextBody();
-    printf("%d\n", b);
+    //int b = getNextBody();
+    printf("<%f, %f, %f>\n", forces[i].x, forces[i].y, forces[i].z);
     fflush(stdout);
   }
 //   body b0 = {0,  0,0,0, -1,0,200,1};
