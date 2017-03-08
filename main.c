@@ -2,6 +2,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
+#include <unistd.h> // for usleep
+#include "gfx.h"
 #include "bodies.h"
 
 
@@ -44,6 +46,10 @@ int main () {
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   
+  //set window size
+  int win_x_size = 500;
+  int win_y_size = 500;
+  
   bodies[0].pos.x = 0;
   bodies[0].pos.y = 0;
   bodies[0].pos.z = 0;
@@ -71,16 +77,26 @@ int main () {
   bodies[2].mass = 10000000;
   bodies[2].density = 1;
   
-  printf("1:\n");
-  for (int i=0; i<numBodies; ++i) {
-    printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\n", bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z, 
-	                                     bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z);
-    fflush(stdout);
-  }
+//   printf("1:\n");
+//   for (int i=0; i<numBodies; ++i) {
+//     printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\n", bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z, 
+// 	                                     bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z);
+//     fflush(stdout);
+//   }
   
   
+  int iter = 0;
+  while (iter < 10) {
+    ++iter;
   
-//   while (1) {
+    printf("%d:\n",iter);
+    for (int i=0; i<numBodies; ++i) {
+      printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\t\tf:<%f, %f, %f>\n", 
+	     bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z,
+	     bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z, 
+	     forces[i].x, forces[i].y, forces[i].z);
+      fflush(stdout);
+    }
      
     // set all forces to 0
     clearForces();
@@ -95,7 +111,7 @@ int main () {
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_join(threads[t], NULL);
     }
-    
+
     // initialize all threads
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_create(&(threads[t]), NULL, updatePosAndVels, NULL);
@@ -107,15 +123,46 @@ int main () {
     }
     
      
-//   } //END: while (1)
+  } //END: while (1)
   
   
-  printf("2:\n");
-  for (int i=0; i<numBodies; ++i) {
-    printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\n", bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z, 
-	                                         bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z);
-    fflush(stdout);
-  }
+//   // Open a new window for drawing.
+//   gfx_open(win_x_size, win_y_size, "N-Body");  
+//   
+//   while (1) {
+//     // set all forces to 0
+//     clearForces();
+// 
+//     // initialize all threads
+//     pthread_t threads[NUM_THREADS];
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_create(&(threads[t]), NULL, updateForces, NULL);
+//     }
+// 
+//     // block on thread completion
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_join(threads[t], NULL);
+//     }
+//     
+//     // initialize all threads
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_create(&(threads[t]), NULL, updatePosAndVels, NULL);
+//     }
+// 
+//     // block on thread completion
+//     for (int t=0; t<NUM_THREADS; ++t) {
+//       pthread_join(threads[t], NULL);
+//     } 
+//     
+//     gfx_clear();
+//     // Set the current drawing color to green.
+//     gfx_color(0,200,100);
+//     for (int i=0; i<numBodies; ++i) {
+//       gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, 50);
+//     }
+//     gfx_flush();
+//     usleep(100000);
+//   }
 }
 
 
