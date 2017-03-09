@@ -85,7 +85,7 @@ int main () {
   bodies[3].pos.y = 200;
   bodies[3].pos.z = 0;
   bodies[3].vel.x = 0.006;
-  bodies[3].vel.y = -0.009;
+  bodies[3].vel.y = -0.007;
   bodies[3].vel.z = 0;
   bodies[3].mass = 12000000;
   bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
