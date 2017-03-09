@@ -24,7 +24,7 @@ vector3D getForce(body bodyOn, body bodyFrom) {
   p.y = bodyFrom.pos.y - bodyOn.pos.y;
   p.z = bodyFrom.pos.z - bodyOn.pos.z;
   
-  pseudoMagnitude = -1 * G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
+  pseudoMagnitude = G * bodyOn.mass * bodyFrom.mass / pow(getMagnitude(p), 3);
   
   f.x = pseudoMagnitude * p.x;
   f.y = pseudoMagnitude * p.y;
