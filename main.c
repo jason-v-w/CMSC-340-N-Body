@@ -13,7 +13,7 @@
 
 
 // define globals
-double           timeStep = 10000; //all units are given in base SI
+double           timeStep = 1000; //all units are given in base SI
 int              numBodies = 3;
 pthread_mutex_t  mutex;
 body            *bodies;
@@ -80,8 +80,11 @@ int main () {
   bodies[0].vel.y = 0;
   bodies[0].vel.z = 0;
   bodies[0].mass = 1.99e30;
-  //bodies[0].radius = 695842;
-  bodies[0].radius = 10000;
+  bodies[0].radius = 695842;
+  bodies[0].disp_radius = 50;
+  bodies[0].color.r = 255;
+  bodies[0].color.g = 128;
+  bodies[0].color.b = 0;
   
   // EARTH
   bodies[1].pos.x = 1.5e11;
@@ -92,6 +95,10 @@ int main () {
   bodies[1].vel.z = 0;
   bodies[1].mass = 5.97e24;
   bodies[1].radius = 6353;
+  bodies[1].disp_radius = 3;
+  bodies[1].color.r = 0;
+  bodies[1].color.g = 0;
+  bodies[1].color.b = 204;
   
   // MOON
   bodies[2].pos.x = 384400000 + bodies[1].pos.x;
@@ -102,6 +109,10 @@ int main () {
   bodies[2].vel.z = 0;
   bodies[2].mass = 7.3477e22;
   bodies[2].radius = 1737;
+  bodies[2].disp_radius = 1;
+  bodies[2].color.r = 240;
+  bodies[2].color.g = 240;
+  bodies[2].color.b = 240;
   
 //   bodies[2].pos.x = -142;
 //   bodies[2].pos.y = 0;
@@ -369,9 +380,10 @@ void display_system() {
       default:
 	gfx_color(0,0,255);
     }
+    gfx_color(bodies[i].color.r, bodies[i].color.g, bodies[i].color.b);
     gfx_circle(bodies[i].pos.x*space_scale + win_x_size/2, 
 	       bodies[i].pos.y*space_scale + win_y_size/2, 
-	       5);
+	       bodies[i].disp_radius);
   }
   gfx_flush();
 }

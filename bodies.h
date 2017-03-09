@@ -6,13 +6,20 @@ typedef struct vector3D {
   double x, y, z;
 } vector3D;
 
+// color
+typedef struct color {
+  char r, g, b;
+} color;
+
 
 // spacial body
 typedef struct body {
   double radius;
+  int disp_radius;
   long double mass;
   vector3D pos;
   vector3D vel;
+  color color;
 } body;
 
 
