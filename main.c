@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <math.h>
 #include <string.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -17,7 +18,7 @@ int              numBodies = 3;
 pthread_mutex_t  mutex;
 body            *bodies;
 vector3D        *forces;
-
+double		body_scale = 0.03;
 
 // define structs
 typedef struct pair {
@@ -61,20 +62,20 @@ int main () {
   bodies[0].mass = 200000000;
   bodies[0].density = 1;
   
-  bodies[1].pos.x = 142;
+  bodies[1].pos.x = 200;
   bodies[1].pos.y = 0;
   bodies[1].pos.z = 0;
   bodies[1].vel.x = 0;
   bodies[1].vel.y = -0.01;
   bodies[1].vel.z = 0;
-  bodies[1].mass = 10000000;
+  bodies[1].mass = 50000000;
   bodies[1].density = 1;
   
   bodies[2].pos.x = -142;
   bodies[2].pos.y = 0;
   bodies[2].pos.z = 0;
   bodies[2].vel.x = 0;
-  bodies[2].vel.y = 0.011;
+  bodies[2].vel.y = 0.0102;
   bodies[2].vel.z = 0;
   bodies[2].mass = 10000000;
   bodies[2].density = 1;
@@ -117,7 +118,7 @@ int main () {
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
   int iter = 0;
-  while (iter < 5000) {
+  while (1) {
     ++iter;
   
     printf("%d:\n",iter);
@@ -157,7 +158,8 @@ int main () {
     // Set the current drawing color to green.
     gfx_color(0,200,100);
     for (int i=0; i<numBodies; ++i) {
-      gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, 50);
+      int radius = cbrt(bodies[i].mass / bodies[i].density / 4 / M_PI * 3) * body_scale;
+      gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, radius);
     }
     gfx_flush();
     usleep(10000);
