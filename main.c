@@ -206,19 +206,11 @@ int main () {
 }
 
 
-//PTHREAD COMMENTED OUT
 pair getNextBodySet(int reset) {
     static int finished, i, j;
-    //sprintf("0\n"); fflush(stdout);
-    //guard with mutex
-    //TODO: check if mutex can be locked later
-    //pthread_mutex_lock(&mutex);
-    //printf("0.1\n"); fflush(stdout);
+    pthread_mutex_lock(&mutex);
     
       pair p;
-    //printf("0.2\n"); fflush(stdout);
-      
-      //printf("1\n");
       
       if (reset) {
 	finished = 0;
@@ -226,9 +218,9 @@ pair getNextBodySet(int reset) {
 	j = 0;
 	p.a = -1;
 	p.b = -1;
+	pthread_mutex_unlock(&mutex);
 	return p;
       }
-      //printf("2\n"); fflush(stdout);
       
       if (finished==0) {
 	if (j==i) {
@@ -247,28 +239,24 @@ pair getNextBodySet(int reset) {
 	}
       }
       
-      //printf("3\n"); fflush(stdout);
-      
       if (finished) {
 	p.a = -1;
 	p.b = -1;
       }
-      
-    //release mutex
-    //TODO: check if mutex can be released earlier
-    //pthread_mutex_unlock(&mutex);
-    
+
+    pthread_mutex_unlock(&mutex);
     return p;
 }
 
-//PTHREAD COMMENTED OUT
+
 int getNextBody(int reset) {
-  //pthread_mutex_lock(&mutex);
+  pthread_mutex_lock(&mutex);
     static int b, finished = 0;
   
     if (reset) {
       finished = 0;
       b = -1;
+      pthread_mutex_unlock(&mutex);
       return b;
     }
     
@@ -277,8 +265,8 @@ int getNextBody(int reset) {
       finished = 1;
     if (finished==1)
       b = -1;
-  //pthread_mutex_unlock(&mutex);
-  
+    
+  pthread_mutex_unlock(&mutex);
   return b;
 }
 
