@@ -1,2 +1,9 @@
 account for close bodies
 	demo3 (explode)
+
+don't use the usleep command to hold the display
+	instead let one main thread run the display and 
+		-wake up periodically
+		-display the image
+		-start the next computation
+		-go to sleep
