@@ -18,7 +18,10 @@ int              numBodies = 3;
 pthread_mutex_t  mutex;
 body            *bodies;
 vector3D        *forces;
-double		body_scale = 0.03;
+
+//set window size
+int win_x_size = 1200;
+int win_y_size = 800;
 
 // define structs
 typedef struct pair {
@@ -32,6 +35,7 @@ int getNextBody(int reset);
 void clearForces();
 void* updateForces();
 void* updatePosAndVels();
+void display_system();
 
 
 /* Main method
@@ -48,10 +52,6 @@ int main () {
   //TODO: handle error condition
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
-  
-  //set window size
-  int win_x_size = 1200;
-  int win_y_size = 800;
   
   bodies[0].pos.x = 0;
   bodies[0].pos.y = 0;
@@ -147,14 +147,7 @@ int main () {
       pthread_join(threads[t], NULL);
     }
     
-    gfx_clear();
-    // Set the current drawing color to green.
-    gfx_color(0,200,100);
-    for (int i=0; i<numBodies; ++i) {
-      int radius = cbrt(bodies[i].mass / bodies[i].density / 4 / M_PI * 3) * body_scale;
-      gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, radius);
-    }
-    gfx_flush();
+    display_system();
     usleep(10000);
     
      
@@ -296,7 +289,14 @@ void *updatePosAndVels() {
 }
 
 void display_system() {
-  
+  static double body_scale = 0.03; // arbitraryish
+  gfx_clear();
+  gfx_color(0,200,100);
+  for (int i=0; i<numBodies; ++i) {
+    int radius = cbrt(bodies[i].mass / bodies[i].density / 4 / M_PI * 3) * body_scale;
+    gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, radius);
+  }
+  gfx_flush();
 }
 
 
