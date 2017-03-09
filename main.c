@@ -13,8 +13,8 @@
 
 
 // define globals
-double           timeStep = 1000; //all units are given in base SI
-int              numBodies = 2;
+double           timeStep = 10000; //all units are given in base SI
+int              numBodies = 3;
 pthread_mutex_t  mutex;
 body            *bodies;
 vector3D        *forces;
@@ -54,53 +54,54 @@ int main () {
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   
-  bodies[0].pos.x = 0;
-  bodies[0].pos.y = 0;
-  bodies[0].pos.z = 0;
-  bodies[0].vel.x = 0;
-  bodies[0].vel.y = 0;
-  bodies[0].vel.z = 0;
-  bodies[0].mass = 5.9722e24;
-  bodies[0].radius = 6353;
-  
-  bodies[1].pos.x = 385000000;
-  bodies[1].pos.y = 0;
-  bodies[1].pos.z = 0;
-  bodies[1].vel.x = 0;
-  bodies[1].vel.y = 1023;
-  bodies[1].vel.z = 0;
-  bodies[1].mass = 7.3477e22;
-  bodies[1].radius = 1737;
-  
-//   // SUN
 //   bodies[0].pos.x = 0;
 //   bodies[0].pos.y = 0;
 //   bodies[0].pos.z = 0;
 //   bodies[0].vel.x = 0;
 //   bodies[0].vel.y = 0;
 //   bodies[0].vel.z = 0;
-//   bodies[0].mass = 1.99e30;
-//   bodies[0].radius = 695842;
+//   bodies[0].mass = 5.9722e24;
+//   bodies[0].radius = 6353;
 //   
-//   // EARTH
-//   bodies[1].pos.x = 1.5e11;
+//   bodies[1].pos.x = 385000000;
 //   bodies[1].pos.y = 0;
 //   bodies[1].pos.z = 0;
 //   bodies[1].vel.x = 0;
-//   bodies[1].vel.y = 3.0e4;
+//   bodies[1].vel.y = 1023;
 //   bodies[1].vel.z = 0;
-//   bodies[1].mass = 5.97e24;
-//   bodies[1].radius = 6353;
-//   
-//   // MOON
-//   bodies[2].pos.x = 384400000 + bodies[1].pos.x;
-//   bodies[2].pos.y = 0;
-//   bodies[2].pos.z = 0;
-//   bodies[2].vel.x = 0;
-//   bodies[2].vel.y = 1023;
-//   bodies[2].vel.z = 0;
-//   bodies[2].mass = 7.3477e22;
-//   bodies[2].radius = 1737;
+//   bodies[1].mass = 7.3477e22;
+//   bodies[1].radius = 1737;
+  
+  // SUN
+  bodies[0].pos.x = 0;
+  bodies[0].pos.y = 0;
+  bodies[0].pos.z = 0;
+  bodies[0].vel.x = 0;
+  bodies[0].vel.y = 0;
+  bodies[0].vel.z = 0;
+  bodies[0].mass = 1.99e30;
+  //bodies[0].radius = 695842;
+  bodies[0].radius = 10000;
+  
+  // EARTH
+  bodies[1].pos.x = 1.5e11;
+  bodies[1].pos.y = 0;
+  bodies[1].pos.z = 0;
+  bodies[1].vel.x = 0;
+  bodies[1].vel.y = 3.0e4;
+  bodies[1].vel.z = 0;
+  bodies[1].mass = 5.97e24;
+  bodies[1].radius = 6353;
+  
+  // MOON
+  bodies[2].pos.x = 384400000 + bodies[1].pos.x;
+  bodies[2].pos.y = 0;
+  bodies[2].pos.z = 0;
+  bodies[2].vel.x = 0;
+  bodies[2].vel.y = 1023 + bodies[1].vel.y;
+  bodies[2].vel.z = 0;
+  bodies[2].mass = 7.3477e22;
+  bodies[2].radius = 1737;
   
 //   bodies[2].pos.x = -142;
 //   bodies[2].pos.y = 0;
@@ -354,8 +355,8 @@ void *checkForCollisions() {
 
 void display_system() {
   static double body_scale = 0.005; // arbitraryish
-  static double space_scale = 0.0000005; // arbitraryish
-  //gfx_clear();
+  static double space_scale = 1e-9; // arbitraryish
+  gfx_clear();
   gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {
     switch(i) {
@@ -370,7 +371,7 @@ void display_system() {
     }
     gfx_circle(bodies[i].pos.x*space_scale + win_x_size/2, 
 	       bodies[i].pos.y*space_scale + win_y_size/2, 
-	       bodies[i].radius*body_scale);
+	       5);
   }
   gfx_flush();
 }
