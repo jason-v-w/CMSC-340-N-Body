@@ -16,6 +16,7 @@
 double           timeStep = 1000; //all units are given in base SI
 int              numBodies = 3;
 pthread_mutex_t  mutex;
+pthread_mutex_t  testing_mutex;
 body            *bodies;
 vector3D        *forces;
 
@@ -48,6 +49,7 @@ int main () {
   
   //initialize mutex
   pthread_mutex_init(&mutex, NULL);
+  pthread_mutex_init(&testing_mutex, NULL);
   
   //get memory space
   //TODO: handle error condition
@@ -97,38 +99,41 @@ int main () {
   bodies[2].color.b = 240;
   
   
-  pair p;
-  int b;
-  //printf("-1\n"); fflush(stdout);
-  getNextBodySet(1);
-  //printf("-1.5\n"); fflush(stdout);
-  for (int i=0; i<10; ++i) {
-    p = getNextBodySet(0);
-    printf("(%d, %d)", p.a, p.b);
-  }  
-  getNextBodySet(1);
-  for (int i=0; i<10; ++i) {
-    p = getNextBodySet(0);
-    printf("(%d, %d)", p.a, p.b);
-  }
-  
-  printf("\n");
-  b = getNextBody(1);
-  for (int i=0; i<10; ++i) {
-    b = getNextBody(0);
-    printf("%d, ",b);
-  }
-  getNextBody(1);
-  for (int i=0; i<10; ++i) {
-    b = getNextBody(0);
-    printf("%d, ",b);
-  }
-  printf("\n\n----------\n\n");
+//   pair p;
+//   int b;
+//   //printf("-1\n"); fflush(stdout);
+//   getNextBodySet(1);
+//   //printf("-1.5\n"); fflush(stdout);
+//   for (int i=0; i<10; ++i) {
+//     p = getNextBodySet(0);
+//     printf("(%d, %d)", p.a, p.b);
+//   }  
+//   getNextBodySet(1);
+//   for (int i=0; i<10; ++i) {
+//     p = getNextBodySet(0);
+//     printf("(%d, %d)", p.a, p.b);
+//   }
+//   
+//   printf("\n");
+//   b = getNextBody(1);
+//   for (int i=0; i<10; ++i) {
+//     b = getNextBody(0);
+//     printf("%d, ",b);
+//   }
+//   getNextBody(1);
+//   for (int i=0; i<10; ++i) {
+//     b = getNextBody(0);
+//     printf("%d, ",b);
+//   }
+//   printf("\n\n----------\n\n");
   
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
 
+  // initialize all threads
+  pthread_t threads[NUM_THREADS];
+  
   int iter = 0;
   while (1) {
     // print system state info to terminal
@@ -140,10 +145,10 @@ int main () {
     // set all forces to 0
     clearForces();
 
-    // initialize all threads
-    pthread_t threads[NUM_THREADS];
     for (int t=0; t<NUM_THREADS; ++t) {
+      pthread_mutex_lock(&testing_mutex);
       pthread_create(&(threads[t]), NULL, updateForces, NULL);
+      pthread_mutex_unlock(&testing_mutex);
     }
     
     // block on thread completion
@@ -153,7 +158,9 @@ int main () {
 
     // initialize all threads
     for (int t=0; t<NUM_THREADS; ++t) {
+      pthread_mutex_lock(&testing_mutex);
       pthread_create(&(threads[t]), NULL, updatePosAndVels, NULL);
+      pthread_mutex_unlock(&testing_mutex);
     }
 
     // block on thread completion
@@ -171,8 +178,8 @@ int main () {
 
 
 pair getNextBodySet(int reset) {
+    //pthread_mutex_lock(&mutex);
     static int finished, i, j;
-    pthread_mutex_lock(&mutex);
     
       pair p;
       
@@ -182,7 +189,7 @@ pair getNextBodySet(int reset) {
 	j = 0;
 	p.a = -1;
 	p.b = -1;
-	pthread_mutex_unlock(&mutex);
+	//pthread_mutex_unlock(&mutex);
 	return p;
       }
       
@@ -208,19 +215,19 @@ pair getNextBodySet(int reset) {
 	p.b = -1;
       }
 
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
     return p;
 }
 
 
 int getNextBody(int reset) {
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
     static int b, finished = 0;
   
     if (reset) {
       finished = 0;
       b = -1;
-      pthread_mutex_unlock(&mutex);
+      //pthread_mutex_unlock(&mutex);
       return b;
     }
     
@@ -230,7 +237,7 @@ int getNextBody(int reset) {
     if (finished==1)
       b = -1;
     
-  pthread_mutex_unlock(&mutex);
+  //pthread_mutex_unlock(&mutex);
   return b;
 }
 
@@ -245,14 +252,21 @@ void clearForces() {
 
 
 void *updateForces() {
+  pthread_mutex_lock(&mutex);
   pair p;
   
+  //pthread_mutex_lock(&mutex);
   getNextBodySet(1);
+  //pthread_mutex_unlock(&mutex);
   
   while (1) {
+    //pthread_mutex_lock(&mutex);
     p = getNextBodySet(0);
+    //pthread_mutex_unlock(&mutex);
+    
     if (p.a == -1 && p.b == -1) {
       // kill this thread
+      pthread_mutex_unlock(&mutex);
       pthread_exit(NULL);
     } else {
       // compute interaction forces between body A and body B
@@ -268,14 +282,21 @@ void *updateForces() {
 
 
 void *updatePosAndVels() {
+  pthread_mutex_lock(&mutex);
   int x;
   
+  //pthread_mutex_lock(&mutex);
   getNextBody(1);
+  //pthread_mutex_unlock(&mutex);
   
   while (1) {
+    //pthread_mutex_lock(&mutex);
     x = getNextBody(0);
+    //pthread_mutex_unlock(&mutex);
+    
     if (x == -1) {
       // kill this thread
+      pthread_mutex_unlock(&mutex);
       pthread_exit(NULL);
     } else {
       vector3D accel = getAcceleration(bodies[x], forces[x]);
@@ -293,26 +314,6 @@ void *updatePosAndVels() {
 
 
 void *checkForCollisions() {
-  pair p;
-  
-  // reset the static variables in the getNextBody method by passing arg of 1
-  getNextBodySet(1);
-  
-  while (1) {
-    p = getNextBodySet(0);
-    if (p.a == -1 && p.b == -1) {
-      // kill this thread
-      pthread_exit(NULL);
-    } else {
-      // compute interaction forces between body A and body B
-      vector3D forceOnA = getForce(bodies[p.a], bodies[p.b]);
-      vector3D forceOnB = negateVector3D(forceOnA);
-      
-      // add the respective forces to the running total forces
-      forces[p.a] = vector3DSum(forces[p.a], forceOnA);
-      forces[p.b] = vector3DSum(forces[p.b], forceOnB);
-    }
-  }
 }
 
 
