@@ -13,8 +13,8 @@
 
 
 // define globals
-double           timeStep = 100; //all units are given in base SI
-int              numBodies = 4;
+double           timeStep = 0.001; //all units are given in base SI
+int              numBodies = 2;
 pthread_mutex_t  mutex;
 body            *bodies;
 vector3D        *forces;
@@ -44,7 +44,7 @@ void print_system_info(int iteration);
  * @author Ethan Brummel, Garth Van Donselaar, Jason Vander Woude
  */
 int main () {
-  static int display_delay = 10000;
+  static int display_delay = 100;
   
   //initialize mutex
   pthread_mutex_init(&mutex, NULL);
@@ -60,35 +60,35 @@ int main () {
   bodies[0].vel.x = 0;
   bodies[0].vel.y = 0;
   bodies[0].vel.z = 0;
-  bodies[0].mass = 200000000;
-  bodies[0].radius = cbrt(bodies[0].mass / 4 / M_PI * 3);
+  bodies[0].mass = 5.9722e24;
+  bodies[0].radius = 6353;
   
-  bodies[1].pos.x = 200;
+  bodies[1].pos.x = 385000;
   bodies[1].pos.y = 0;
   bodies[1].pos.z = 0;
   bodies[1].vel.x = 0;
-  bodies[1].vel.y = -0.005;
+  bodies[1].vel.y = 102300;
   bodies[1].vel.z = 0;
-  bodies[1].mass = 50000000;
-  bodies[1].radius = cbrt(bodies[1].mass / 4 / M_PI * 3);
+  bodies[1].mass = 7.3477e22;
+  bodies[1].radius = 1737;
   
-  bodies[2].pos.x = -142;
-  bodies[2].pos.y = 0;
-  bodies[2].pos.z = 0;
-  bodies[2].vel.x = 0;
-  bodies[2].vel.y = 0.0102;
-  bodies[2].vel.z = 0;
-  bodies[2].mass = 10000000;
-  bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
-  
-  bodies[3].pos.x = -342;
-  bodies[3].pos.y = 200;
-  bodies[3].pos.z = 0;
-  bodies[3].vel.x = 0.006;
-  bodies[3].vel.y = -0.007;
-  bodies[3].vel.z = 0;
-  bodies[3].mass = 12000000;
-  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
+//   bodies[2].pos.x = -142;
+//   bodies[2].pos.y = 0;
+//   bodies[2].pos.z = 0;
+//   bodies[2].vel.x = 0;
+//   bodies[2].vel.y = 0.0102;
+//   bodies[2].vel.z = 0;
+//   bodies[2].mass = 10000000;
+//   bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
+//   
+//   bodies[3].pos.x = -342;
+//   bodies[3].pos.y = 200;
+//   bodies[3].pos.z = 0;
+//   bodies[3].vel.x = 0.006;
+//   bodies[3].vel.y = -0.007;
+//   bodies[3].vel.z = 0;
+//   bodies[3].mass = 12000000;
+//   bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
   
   
 //   pair p;
@@ -323,12 +323,24 @@ void *checkForCollisions() {
 
 
 void display_system() {
-  static double body_scale = 0.03; // arbitraryish
+  static double body_scale = 0.005; // arbitraryish
+  static double space_scale = 0.0005; // arbitraryish
   gfx_clear();
   gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {
-    int radius = bodies[i].radius * body_scale;
-    gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, radius);
+    switch(i) {
+      case 0:
+	gfx_color(255,0,0);
+	break;
+      case 1:
+	gfx_color(0,255,0);
+	break;
+      default:
+	gfx_color(0,0,255);
+    }
+    gfx_circle(bodies[i].pos.x*space_scale + win_x_size/2, 
+	       bodies[i].pos.y*space_scale + win_y_size/2, 
+	       bodies[i].radius*body_scale);
   }
   gfx_flush();
 }

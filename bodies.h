@@ -9,7 +9,8 @@ typedef struct vector3D {
 
 // spacial body
 typedef struct body {
-  double radius, mass;
+  double radius;
+  long double mass;
   vector3D pos;
   vector3D vel;
 } body;
