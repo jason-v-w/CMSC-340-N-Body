@@ -7,3 +7,6 @@ don't use the usleep command to hold the display
 		-display the image
 		-start the next computation
 		-go to sleep
+
+get multi-threading working
+	there was a problem with the getNextBody and getNextBodySet methods hanging after adding the reset code
