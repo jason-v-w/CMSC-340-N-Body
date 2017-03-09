@@ -36,6 +36,7 @@ void clearForces();
 void* updateForces();
 void* updatePosAndVels();
 void display_system();
+void print_system_info(int iteration);
 
 
 /* Main method
@@ -43,8 +44,8 @@ void display_system();
  * @author Ethan Brummel, Garth Van Donselaar, Jason Vander Woude
  */
 int main () {
-  pair p;
-  int b;
+  static int display_delay = 10000;
+  
   //initialize mutex
   pthread_mutex_init(&mutex, NULL);
   
@@ -60,7 +61,7 @@ int main () {
   bodies[0].vel.y = 0;
   bodies[0].vel.z = 0;
   bodies[0].mass = 200000000;
-  bodies[0].density = 1;
+  bodies[0].radius = cbrt(bodies[0].mass / 4 / M_PI * 3);
   
   bodies[1].pos.x = 200;
   bodies[1].pos.y = 0;
@@ -69,7 +70,7 @@ int main () {
   bodies[1].vel.y = -0.005;
   bodies[1].vel.z = 0;
   bodies[1].mass = 50000000;
-  bodies[1].density = 1;
+  bodies[1].radius = cbrt(bodies[1].mass / 4 / M_PI * 3);
   
   bodies[2].pos.x = -142;
   bodies[2].pos.y = 0;
@@ -78,9 +79,11 @@ int main () {
   bodies[2].vel.y = 0.0102;
   bodies[2].vel.z = 0;
   bodies[2].mass = 10000000;
-  bodies[2].density = 1;
+  bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
   
   
+//   pair p;
+//   int b;
 //   //printf("-1\n"); fflush(stdout);
 //   getNextBodySet(1);
 //   //printf("-1.5\n"); fflush(stdout);
@@ -110,19 +113,15 @@ int main () {
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
+
   int iter = 0;
   while (1) {
-    ++iter;
-  
-    printf("%d:\n",iter);
-    for (int i=0; i<numBodies; ++i) {
-      printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\t\tf:<%f, %f, %f>\n", 
-	     bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z,
-	     bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z, 
-	     forces[i].x, forces[i].y, forces[i].z);
-      fflush(stdout);
-    }
+    // print system state info to terminal
+    print_system_info(iter++);
      
+    // display system on screen
+    display_system();
+    
     // set all forces to 0
     clearForces();
 
@@ -132,6 +131,10 @@ int main () {
       pthread_create(&(threads[t]), NULL, updateForces, NULL);
     }
 
+    // sleep while main work is being done in other threads
+    // this is not the ideal implementation but is easy to code
+    usleep(display_delay);
+    
     // block on thread completion
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_join(threads[t], NULL);
@@ -146,9 +149,6 @@ int main () {
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_join(threads[t], NULL);
     }
-    
-    display_system();
-    usleep(10000);
     
      
   } //END: while (1)
@@ -288,17 +288,51 @@ void *updatePosAndVels() {
   }
 }
 
+
+void *checkForCollisions() {
+  pair p;
+  
+  // reset the static variables in the getNextBody method by passing arg of 1
+  getNextBodySet(1);
+  
+  while (1) {
+    p = getNextBodySet(0);
+    if (p.a == -1 && p.b == -1) {
+      // kill this thread
+      pthread_exit(NULL);
+    } else {
+      // compute interaction forces between body A and body B
+      vector3D forceOnA = getForce(bodies[p.a], bodies[p.b]);
+      vector3D forceOnB = negateVector3D(forceOnA);
+      
+      // add the respective forces to the running total forces
+      forces[p.a] = vector3DSum(forces[p.a], forceOnA);
+      forces[p.b] = vector3DSum(forces[p.b], forceOnB);
+    }
+  }
+}
+
+
 void display_system() {
   static double body_scale = 0.03; // arbitraryish
   gfx_clear();
-  gfx_color(0,200,100);
+  gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {
-    int radius = cbrt(bodies[i].mass / bodies[i].density / 4 / M_PI * 3) * body_scale;
+    int radius = bodies[i].radius * body_scale;
     gfx_circle(bodies[i].pos.x + win_x_size/2, bodies[i].pos.y + win_y_size/2, radius);
   }
   gfx_flush();
 }
 
 
-
+void print_system_info(int iteration) {
+  printf("%d:\n",iteration);
+  for (int i=0; i<numBodies; ++i) {
+    printf("p:<%f, %f, %f>\t\tv:<%f, %f, %f>\t\tf:<%f, %f, %f>\n", 
+	    bodies[i].pos.x, bodies[i].pos.y, bodies[i].pos.z,
+	    bodies[i].vel.x, bodies[i].vel.y, bodies[i].vel.z, 
+	    forces[i].x, forces[i].y, forces[i].z);
+    fflush(stdout);
+  } 
+}
 
