@@ -14,7 +14,7 @@
 
 // define globals
 double           timeStep = 100; //all units are given in base SI
-int              numBodies = 3;
+int              numBodies = 4;
 pthread_mutex_t  mutex;
 body            *bodies;
 vector3D        *forces;
@@ -80,6 +80,15 @@ int main () {
   bodies[2].vel.z = 0;
   bodies[2].mass = 10000000;
   bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
+  
+  bodies[3].pos.x = -342;
+  bodies[3].pos.y = 200;
+  bodies[3].pos.z = 0;
+  bodies[3].vel.x = 0.006;
+  bodies[3].vel.y = -0.009;
+  bodies[3].vel.z = 0;
+  bodies[3].mass = 12000000;
+  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
   
   
 //   pair p;
