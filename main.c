@@ -9,7 +9,7 @@
 
 
 // define constants
-#define NUM_THREADS 1
+#define NUM_THREADS 4
 
 
 // define globals
@@ -54,24 +54,6 @@ int main () {
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   
-//   bodies[0].pos.x = 0;
-//   bodies[0].pos.y = 0;
-//   bodies[0].pos.z = 0;
-//   bodies[0].vel.x = 0;
-//   bodies[0].vel.y = 0;
-//   bodies[0].vel.z = 0;
-//   bodies[0].mass = 5.9722e24;
-//   bodies[0].radius = 6353;
-//   
-//   bodies[1].pos.x = 385000000;
-//   bodies[1].pos.y = 0;
-//   bodies[1].pos.z = 0;
-//   bodies[1].vel.x = 0;
-//   bodies[1].vel.y = 1023;
-//   bodies[1].vel.z = 0;
-//   bodies[1].mass = 7.3477e22;
-//   bodies[1].radius = 1737;
-  
   // SUN
   bodies[0].pos.x = 0;
   bodies[0].pos.y = 0;
@@ -114,52 +96,34 @@ int main () {
   bodies[2].color.g = 240;
   bodies[2].color.b = 240;
   
-//   bodies[2].pos.x = -142;
-//   bodies[2].pos.y = 0;
-//   bodies[2].pos.z = 0;
-//   bodies[2].vel.x = 0;
-//   bodies[2].vel.y = 0.0102;
-//   bodies[2].vel.z = 0;
-//   bodies[2].mass = 10000000;
-//   bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
-//   
-//   bodies[3].pos.x = -342;
-//   bodies[3].pos.y = 200;
-//   bodies[3].pos.z = 0;
-//   bodies[3].vel.x = 0.006;
-//   bodies[3].vel.y = -0.007;
-//   bodies[3].vel.z = 0;
-//   bodies[3].mass = 12000000;
-//   bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
   
+  pair p;
+  int b;
+  //printf("-1\n"); fflush(stdout);
+  getNextBodySet(1);
+  //printf("-1.5\n"); fflush(stdout);
+  for (int i=0; i<10; ++i) {
+    p = getNextBodySet(0);
+    printf("(%d, %d)", p.a, p.b);
+  }  
+  getNextBodySet(1);
+  for (int i=0; i<10; ++i) {
+    p = getNextBodySet(0);
+    printf("(%d, %d)", p.a, p.b);
+  }
   
-//   pair p;
-//   int b;
-//   //printf("-1\n"); fflush(stdout);
-//   getNextBodySet(1);
-//   //printf("-1.5\n"); fflush(stdout);
-//   for (int i=0; i<10; ++i) {
-//     p = getNextBodySet(0);
-//     printf("(%d, %d)", p.a, p.b);
-//   }  
-//   getNextBodySet(1);
-//   for (int i=0; i<10; ++i) {
-//     p = getNextBodySet(0);
-//     printf("(%d, %d)", p.a, p.b);
-//   }
-//   
-//   printf("\n");
-//   b = getNextBody(1);
-//   for (int i=0; i<10; ++i) {
-//     b = getNextBody(0);
-//     printf("%d, ",b);
-//   }
-//   getNextBody(1);
-//   for (int i=0; i<10; ++i) {
-//     b = getNextBody(0);
-//     printf("%d, ",b);
-//   }
-//   printf("\n\n----------\n\n");
+  printf("\n");
+  b = getNextBody(1);
+  for (int i=0; i<10; ++i) {
+    b = getNextBody(0);
+    printf("%d, ",b);
+  }
+  getNextBody(1);
+  for (int i=0; i<10; ++i) {
+    b = getNextBody(0);
+    printf("%d, ",b);
+  }
+  printf("\n\n----------\n\n");
   
   
   // Open a new window for drawing.
@@ -181,10 +145,6 @@ int main () {
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_create(&(threads[t]), NULL, updateForces, NULL);
     }
-
-    // sleep while main work is being done in other threads
-    // this is not the ideal implementation but is easy to code
-    usleep(display_delay);
     
     // block on thread completion
     for (int t=0; t<NUM_THREADS; ++t) {
@@ -200,6 +160,10 @@ int main () {
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_join(threads[t], NULL);
     }
+
+    // sleep while main work is being done in other threads
+    // this is not the ideal implementation but is easy to code
+    usleep(display_delay);
     
      
   } //END: while (1)
