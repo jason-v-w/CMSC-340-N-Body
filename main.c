@@ -149,6 +149,8 @@ int main () {
     // set all forces to 0
     clearForces();
 
+//pthread_mutex_lock(&mutex);
+    getNextBodySet(1);
     for (int t=0; t<NUM_THREADS; ++t) {
       //pthread_mutex_lock(&testing_mutex);
       pthread_create(&(threads[t]), NULL, updateForces, NULL);
@@ -159,7 +161,9 @@ int main () {
     for (int t=0; t<NUM_THREADS; ++t) {
       pthread_join(threads[t], NULL);
     }
-
+//print_system_info(iter++);
+//pthread_mutex_lock(&mutex);
+    getNextBody(1);
     // initialize all threads
     for (int t=0; t<NUM_THREADS; ++t) {
       //pthread_mutex_lock(&testing_mutex);
@@ -260,10 +264,11 @@ void *updateForces() {
   pair p;
   
   //pthread_mutex_lock(&mutex);
-  getNextBodySet(1);
+  //getNextBodySet(1);
   //pthread_mutex_unlock(&mutex);
   
   while (1) {
+    printf("%d\n", pthread_self());
     //pthread_mutex_lock(&mutex);
     p = getNextBodySet(0);
     //pthread_mutex_unlock(&mutex);
@@ -290,7 +295,7 @@ void *updatePosAndVels() {
   int x;
   
   //pthread_mutex_lock(&mutex);
-  getNextBody(1);
+  //getNextBody(1);
   //pthread_mutex_unlock(&mutex);
   
   while (1) {
