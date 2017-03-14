@@ -260,7 +260,7 @@ void clearForces() {
 
 
 void *updateForces() {
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
   pair p;
   
   //pthread_mutex_lock(&mutex);
@@ -268,14 +268,16 @@ void *updateForces() {
   //pthread_mutex_unlock(&mutex);
   
   while (1) {
-    printf("%d\n", pthread_self());
+    //printf("%d\n", pthread_self());
     //pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     p = getNextBodySet(0);
+    pthread_mutex_unlock(&mutex);
     //pthread_mutex_unlock(&mutex);
     
     if (p.a == -1 && p.b == -1) {
       // kill this thread
-      pthread_mutex_unlock(&mutex);
+      //pthread_mutex_unlock(&mutex);
       pthread_exit(NULL);
     } else {
       // compute interaction forces between body A and body B
@@ -291,7 +293,7 @@ void *updateForces() {
 
 
 void *updatePosAndVels() {
-  pthread_mutex_lock(&mutex);
+  //pthread_mutex_lock(&mutex);
   int x;
   
   //pthread_mutex_lock(&mutex);
@@ -300,12 +302,14 @@ void *updatePosAndVels() {
   
   while (1) {
     //pthread_mutex_lock(&mutex);
+    pthread_mutex_lock(&mutex);
     x = getNextBody(0);
+    pthread_mutex_unlock(&mutex);
     //pthread_mutex_unlock(&mutex);
     
     if (x == -1) {
       // kill this thread
-      pthread_mutex_unlock(&mutex);
+      //pthread_mutex_unlock(&mutex);
       pthread_exit(NULL);
     } else {
       vector3D accel = getAcceleration(bodies[x], forces[x]);
