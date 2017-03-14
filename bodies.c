@@ -41,6 +41,14 @@ vector3D getForce(body bodyOn, body bodyFrom) {
 vector3D getAcceleration(body body, vector3D force) {
   //a = F/m
   vector3D a;
+
+  if (body.mass == 0) {
+    a.x = 0;
+    a.y = 0;
+    a.z = 0;
+  
+    return a;
+  }
   
   a.x = force.x / body.mass;
   a.y = force.y / body.mass;

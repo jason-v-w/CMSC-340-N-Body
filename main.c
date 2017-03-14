@@ -45,6 +45,7 @@ void* updateForces();
 void* updatePosAndVels();
 void display_system();
 void print_system_info(int iteration);
+void *checkForCollisions();
 
 
 /* Main method
@@ -185,6 +186,8 @@ int main () {
       pthread_join(threads[t], NULL);
     }
 
+    checkForCollisions();
+
     // sleep while main work is being done in other threads
     // this is not the ideal implementation but is easy to code
     usleep(display_delay);
@@ -300,6 +303,7 @@ void *updatePosAndVels() {
       pthread_exit(NULL);
     } else {
       vector3D accel = getAcceleration(bodies[x], forces[x]);
+      printf("%lf\n", vector3DMag(accel));fflush(stdout);
       // x = x_0 + v*t - 1/2*a*t^2
       bodies[x].pos = vector3DSum(
                                   vector3DSum(
@@ -317,30 +321,35 @@ void *updatePosAndVels() {
 
 */
 void *checkForCollisions() {
+  static int collisionCount = 0;
+  getNextBodySet(1);
+  //printf("CALLED\n");fflush(stdout);
   pair p;
   double distance, aRad, bRad;
   
   while (1) {
-    pthread_mutex_lock(&mutex);
+    //pthread_mutex_lock(&mutex);
     p = getNextBodySet(0);
-    pthread_mutex_unlock(&mutex);
+    //pthread_mutex_unlock(&mutex);
     
     if (p.a == -1 && p.b == -1) {
-      // kill this thread
-      pthread_exit(NULL);
+      return NULL;
     } else {
-      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos));
-      aRad = bodies[p.a].radius;
-      bRad = bodies[p.b].radius;
-      if (distance < aRad + bRad) {
+      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos)) * 0.6;
+      //printf("%lf\n",distance);fflush(stdout);
+      aRad = bodies[p.a].disp_radius;
+      bRad = bodies[p.b].disp_radius;
+      if (distance < aRad + bRad && !(bodies[p.a].mass==0 || bodies[p.b].mass==0 )) {//collision
+	printf("COLLISION! %d\n", collisionCount++); fflush(stdout);
         int bigger = aRad > bRad ? p.a : p.b;
         int smaller = aRad > bRad ? p.b : p.a;
 	bodies[bigger].mass = bodies[bigger].mass + bodies[smaller].mass;
         //Not correctly calculated
-        bodies[bigger].disp_radius = bodies[bigger].disp_radius + bodies[smaller].disp_radius;
-	  bodies[smaller].pos.x = DBL_MAX;
-	  bodies[smaller].pos.y = DBL_MAX;
-	  bodies[smaller].pos.z = DBL_MAX;
+        //bodies[bigger].disp_radius = bodies[bigger].disp_radius + bodies[smaller].disp_radius;
+          
+	  bodies[smaller].pos.x = 1000000000000;
+	  bodies[smaller].pos.y = 1000000000000;
+	  bodies[smaller].pos.z = 1000000000000;
 	  bodies[smaller].vel.x = 0;
 	  bodies[smaller].vel.y = 0;
 	  bodies[smaller].vel.z = 0;
