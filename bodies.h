@@ -64,4 +64,11 @@ vector3D vector3DSum(vector3D a, vector3D b);
  */
 vector3D vector3DScale(vector3D vec, double scale);
 
+
+/* Given a vector and scalar, the scaled vector will be returned
+ * 
+ * @author Jason Vander Woude, Garth
+ */
+double vector3DMag(vector3D vec);
+
 #endif //BODIES_H

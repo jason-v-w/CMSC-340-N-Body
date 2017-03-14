@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h> // for usleep
+#include <float.h> // for DBL_MAX
 #include "gfx.h"
 #include "bodies.h"
 #include "filereader.c"
@@ -14,7 +15,8 @@
 
 
 // define globals
-double           timeStep = 1000; //all units are given in base SI
+char             file[] = "collision.in";
+double           timeStep = 100; //all units are given in base SI
 //int              numBodies = 3;
 int		 numBodies;
 pthread_mutex_t  mutex;
@@ -58,11 +60,11 @@ int main () {
   
   //get memory space
   //TODO: handle error condition
-  numBodies = getNumBodies("system.in");
+  numBodies = getNumBodies(file);
   printf("%d\n",numBodies); fflush(stdout);
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
-  readFile("system.in", numBodies, bodies);
+  readFile(file, numBodies, bodies);
   //print_system_info(0); exit(0);
 
 /*
@@ -108,6 +110,42 @@ int main () {
   bodies[2].color.g = 240;
   bodies[2].color.b = 240;
 */  
+
+  bodies[0].pos.x = 0;
+  bodies[0].pos.y = 0;
+  bodies[0].pos.z = 0;
+  bodies[0].vel.x = 0;
+  bodies[0].vel.y = 0;
+  bodies[0].vel.z = 0;
+  bodies[0].mass = 200000000;
+  bodies[0].radius = cbrt(bodies[0].mass / 4 / M_PI * 3);
+  
+  bodies[1].pos.x = 200;
+  bodies[1].pos.y = 0;
+  bodies[1].pos.z = 0;
+  bodies[1].vel.x = 0;
+  bodies[1].vel.y = -0.005;
+  bodies[1].vel.z = 0;
+  bodies[1].mass = 50000000;
+  bodies[1].radius = cbrt(bodies[1].mass / 4 / M_PI * 3);
+  
+  bodies[2].pos.x = -142;
+  bodies[2].pos.y = 0;
+  bodies[2].pos.z = 0;
+  bodies[2].vel.x = 0;
+  bodies[2].vel.y = 0.0102;
+  bodies[2].vel.z = 0;
+  bodies[2].mass = 10000000;
+  bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
+  
+  bodies[3].pos.x = -342;
+  bodies[3].pos.y = 200;
+  bodies[3].pos.z = 0;
+  bodies[3].vel.x = 0.006;
+  bodies[3].vel.y = -0.007;
+  bodies[3].vel.z = 0;
+  bodies[3].mass = 12000000;
+  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
@@ -275,13 +313,49 @@ void *updatePosAndVels() {
 }
 
 
+/*
+
+*/
 void *checkForCollisions() {
+  pair p;
+  double distance, aRad, bRad;
+  
+  while (1) {
+    pthread_mutex_lock(&mutex);
+    p = getNextBodySet(0);
+    pthread_mutex_unlock(&mutex);
+    
+    if (p.a == -1 && p.b == -1) {
+      // kill this thread
+      pthread_exit(NULL);
+    } else {
+      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos));
+      aRad = bodies[p.a].radius;
+      bRad = bodies[p.b].radius;
+      if (distance < aRad + bRad) {
+        int bigger = aRad > bRad ? p.a : p.b;
+        int smaller = aRad > bRad ? p.b : p.a;
+	bodies[bigger].mass = bodies[bigger].mass + bodies[smaller].mass;
+        //Not correctly calculated
+        bodies[bigger].disp_radius = bodies[bigger].disp_radius + bodies[smaller].disp_radius;
+	  bodies[smaller].pos.x = DBL_MAX;
+	  bodies[smaller].pos.y = DBL_MAX;
+	  bodies[smaller].pos.z = DBL_MAX;
+	  bodies[smaller].vel.x = 0;
+	  bodies[smaller].vel.y = 0;
+	  bodies[smaller].vel.z = 0;
+	  bodies[smaller].mass = 0;
+	  bodies[smaller].radius = 0;
+	  bodies[smaller].disp_radius = 0;
+	}
+      }  
+    }
 }
 
 
 void display_system() {
-  static double body_scale = 0.005; // arbitraryish
-  static double space_scale = 1e-9; // arbitraryish
+  //static double space_scale = 1e-9; // arbitraryish
+  static double space_scale = 0.6; // arbitraryish
   gfx_clear();
   gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {

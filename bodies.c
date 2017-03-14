@@ -87,3 +87,12 @@ vector3D vector3DScale(vector3D vec, double scale) {
   v.z = vec.z * scale;
   return v;
 }
+
+
+/* Given a vector and scalar, the scaled vector will be returned
+ * 
+ * @author Jason Vander Woude, Garth
+ */
+double vector3DMag(vector3D vec) {
+  return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
+}
