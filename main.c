@@ -25,6 +25,7 @@ body            *bodies;
 vector3D        *forces;
 int getNextBodySeti, getNextBodySetj, getNextBodySetfinished;
 int getNextBodyb, getNextBodyfinished;
+double space_scale = 0.6; // arbitraryish
 
 
 //set window size
@@ -335,7 +336,7 @@ void *checkForCollisions() {
     if (p.a == -1 && p.b == -1) {
       return NULL;
     } else {
-      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos)) * 0.6;
+      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos)) * space_scale;
       //printf("%lf\n",distance);fflush(stdout);
       aRad = bodies[p.a].disp_radius;
       bRad = bodies[p.b].disp_radius;
@@ -345,11 +346,18 @@ void *checkForCollisions() {
         int smaller = aRad > bRad ? p.b : p.a;
 	bodies[bigger].mass = bodies[bigger].mass + bodies[smaller].mass;
         //Not correctly calculated
+        //double volume = 4.0/3*M_PI*(pow(bodies[bigger].disp_radius,3) + pow(bodies[smaller].disp_radius,3));
+        //double newRad = cbrt(volume*3.0/4/M_PI);
+
+        double area = M_PI*(pow(bodies[bigger].disp_radius,2) + pow(bodies[smaller].disp_radius,2));
+        double newRad = sqrt(area/M_PI);
+        printf("Radius changed from %lf to %lf", bodies[bigger].disp_radius, newRad);
         //bodies[bigger].disp_radius = bodies[bigger].disp_radius + bodies[smaller].disp_radius;
+          bodies[bigger].disp_radius = newRad;
           
-	  bodies[smaller].pos.x = 1000000000000;
-	  bodies[smaller].pos.y = 1000000000000;
-	  bodies[smaller].pos.z = 1000000000000;
+	  bodies[smaller].pos.x = DBL_MAX;
+	  bodies[smaller].pos.y = DBL_MAX;
+	  bodies[smaller].pos.z = DBL_MAX;
 	  bodies[smaller].vel.x = 0;
 	  bodies[smaller].vel.y = 0;
 	  bodies[smaller].vel.z = 0;
@@ -364,7 +372,6 @@ void *checkForCollisions() {
 
 void display_system() {
   //static double space_scale = 1e-9; // arbitraryish
-  static double space_scale = 0.6; // arbitraryish
   gfx_clear();
   gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {
