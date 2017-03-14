@@ -15,7 +15,7 @@ typedef struct color {
 // spacial body
 typedef struct body {
   double radius;
-  int disp_radius;
+  double disp_radius;
   long double mass;
   vector3D pos;
   vector3D vel;

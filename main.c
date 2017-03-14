@@ -6,6 +6,7 @@
 #include <unistd.h> // for usleep
 #include "gfx.h"
 #include "bodies.h"
+#include "filereader.c"
 
 
 // define constants
@@ -14,7 +15,8 @@
 
 // define globals
 double           timeStep = 1000; //all units are given in base SI
-int              numBodies = 3;
+//int              numBodies = 3;
+int		 numBodies;
 pthread_mutex_t  mutex;
 pthread_mutex_t  testing_mutex;
 body            *bodies;
@@ -56,10 +58,14 @@ int main () {
   
   //get memory space
   //TODO: handle error condition
+  numBodies = getNumBodies("system.in");
+  printf("%d\n",numBodies); fflush(stdout);
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
+  readFile("system.in", numBodies, bodies);
+  //print_system_info(0); exit(0);
 
-  
+/*
   // SUN
   bodies[0].pos.x = 0;
   bodies[0].pos.y = 0;
@@ -101,7 +107,7 @@ int main () {
   bodies[2].color.r = 240;
   bodies[2].color.g = 240;
   bodies[2].color.b = 240;
-  
+*/  
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
