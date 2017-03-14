@@ -19,6 +19,9 @@ pthread_mutex_t  mutex;
 pthread_mutex_t  testing_mutex;
 body            *bodies;
 vector3D        *forces;
+int getNextBodySeti, getNextBodySetj, getNextBodySetfinished;
+int getNextBodyb, getNextBodyfinished;
+
 
 //set window size
 int win_x_size = 1200;
@@ -55,6 +58,7 @@ int main () {
   //TODO: handle error condition
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
+
   
   // SUN
   bodies[0].pos.x = 0;
@@ -146,9 +150,9 @@ int main () {
     clearForces();
 
     for (int t=0; t<NUM_THREADS; ++t) {
-      pthread_mutex_lock(&testing_mutex);
+      //pthread_mutex_lock(&testing_mutex);
       pthread_create(&(threads[t]), NULL, updateForces, NULL);
-      pthread_mutex_unlock(&testing_mutex);
+      //pthread_mutex_unlock(&testing_mutex);
     }
     
     // block on thread completion
@@ -158,9 +162,9 @@ int main () {
 
     // initialize all threads
     for (int t=0; t<NUM_THREADS; ++t) {
-      pthread_mutex_lock(&testing_mutex);
+      //pthread_mutex_lock(&testing_mutex);
       pthread_create(&(threads[t]), NULL, updatePosAndVels, NULL);
-      pthread_mutex_unlock(&testing_mutex);
+      //pthread_mutex_unlock(&testing_mutex);
     }
 
     // block on thread completion
@@ -179,38 +183,38 @@ int main () {
 
 pair getNextBodySet(int reset) {
     //pthread_mutex_lock(&mutex);
-    static int finished, i, j;
+    //static int finished, i, j;
     
       pair p;
       
       if (reset) {
-	finished = 0;
-	i = 0;
-	j = 0;
+	getNextBodySetfinished = 0;
+	getNextBodySeti = 0;
+	getNextBodySetj = 0;
 	p.a = -1;
 	p.b = -1;
 	//pthread_mutex_unlock(&mutex);
 	return p;
       }
       
-      if (finished==0) {
-	if (j==i) {
-	  ++i;
-	  j=0;
+      if (getNextBodySetfinished==0) {
+	if (getNextBodySetj==getNextBodySeti) {
+	  ++getNextBodySeti;
+	  getNextBodySetj=0;
 	}
 	
 	//store return value
-	p.a = i;
-	p.b = j;
+	p.a = getNextBodySeti;
+	p.b = getNextBodySetj;
 	
-	++j;
+	++getNextBodySetj;
 	
-	if (i==numBodies) {
-	  finished = 1;
+	if (getNextBodySeti==numBodies) {
+	  getNextBodySetfinished = 1;
 	}
       }
       
-      if (finished) {
+      if (getNextBodySetfinished) {
 	p.a = -1;
 	p.b = -1;
       }
@@ -222,23 +226,23 @@ pair getNextBodySet(int reset) {
 
 int getNextBody(int reset) {
   //pthread_mutex_lock(&mutex);
-    static int b, finished = 0;
+    //static int b, finished = 0;
   
     if (reset) {
-      finished = 0;
-      b = -1;
+      getNextBodyfinished = 0;
+      getNextBodyb = -1;
       //pthread_mutex_unlock(&mutex);
-      return b;
+      return getNextBodyb;
     }
     
-    ++b;
-    if (b==numBodies)
-      finished = 1;
-    if (finished==1)
-      b = -1;
+    ++getNextBodyb;
+    if (getNextBodyb==numBodies)
+      getNextBodyfinished = 1;
+    if (getNextBodyfinished==1)
+      getNextBodyb = -1;
     
   //pthread_mutex_unlock(&mutex);
-  return b;
+  return getNextBodyb;
 }
 
 
