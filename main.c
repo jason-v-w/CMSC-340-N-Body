@@ -113,7 +113,7 @@ int main () {
   bodies[2].color.b = 240;
 */  
 
-  bodies[0].pos.x = 0;
+/*  bodies[0].pos.x = 0;
   bodies[0].pos.y = 0;
   bodies[0].pos.z = 0;
   bodies[0].vel.x = 0;
@@ -147,7 +147,7 @@ int main () {
   bodies[3].vel.y = -0.007;
   bodies[3].vel.z = 0;
   bodies[3].mass = 12000000;
-  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);
+  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);*/
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
