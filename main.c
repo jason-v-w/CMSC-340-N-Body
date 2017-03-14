@@ -16,7 +16,7 @@
 
 // define globals
 char             file[] = "collision.in";
-double           timeStep = 100; //all units are given in base SI
+double           timeStep;// = 100; //all units are given in base SI
 //int              numBodies = 3;
 int		 numBodies;
 pthread_mutex_t  mutex;
@@ -25,7 +25,7 @@ body            *bodies;
 vector3D        *forces;
 int getNextBodySeti, getNextBodySetj, getNextBodySetfinished;
 int getNextBodyb, getNextBodyfinished;
-double space_scale = 0.6; // arbitraryish
+double displayScale;// = 0.6; // arbitraryish
 
 
 //set window size
@@ -67,87 +67,16 @@ int main () {
   bodies = (body*)malloc(sizeof(body) * numBodies);
   forces = (vector3D*)malloc(sizeof(vector3D) * numBodies);
   readFile(file, numBodies, bodies);
-  //print_system_info(0); exit(0);
 
-/*
-  // SUN
-  bodies[0].pos.x = 0;
-  bodies[0].pos.y = 0;
-  bodies[0].pos.z = 0;
-  bodies[0].vel.x = 0;
-  bodies[0].vel.y = 0;
-  bodies[0].vel.z = 0;
-  bodies[0].mass = 1.99e30;
-  bodies[0].radius = 695842;
-  bodies[0].disp_radius = 50;
-  bodies[0].color.r = 255;
-  bodies[0].color.g = 128;
-  bodies[0].color.b = 0;
-  
-  // EARTH
-  bodies[1].pos.x = 1.5e11;
-  bodies[1].pos.y = 0;
-  bodies[1].pos.z = 0;
-  bodies[1].vel.x = 0;
-  bodies[1].vel.y = 3.0e4;
-  bodies[1].vel.z = 0;
-  bodies[1].mass = 5.97e24;
-  bodies[1].radius = 6353;
-  bodies[1].disp_radius = 3;
-  bodies[1].color.r = 0;
-  bodies[1].color.g = 0;
-  bodies[1].color.b = 204;
-  
-  // MOON
-  bodies[2].pos.x = 384400000 + bodies[1].pos.x;
-  bodies[2].pos.y = 0;
-  bodies[2].pos.z = 0;
-  bodies[2].vel.x = 0;
-  bodies[2].vel.y = 1023 + bodies[1].vel.y;
-  bodies[2].vel.z = 0;
-  bodies[2].mass = 7.3477e22;
-  bodies[2].radius = 1737;
-  bodies[2].disp_radius = 1;
-  bodies[2].color.r = 240;
-  bodies[2].color.g = 240;
-  bodies[2].color.b = 240;
-*/  
+  timeStep = getTimeStep(file);
+  displayScale = getDisplayScale(file);
 
-/*  bodies[0].pos.x = 0;
-  bodies[0].pos.y = 0;
-  bodies[0].pos.z = 0;
-  bodies[0].vel.x = 0;
-  bodies[0].vel.y = 0;
-  bodies[0].vel.z = 0;
-  bodies[0].mass = 200000000;
-  bodies[0].radius = cbrt(bodies[0].mass / 4 / M_PI * 3);
-  
-  bodies[1].pos.x = 200;
-  bodies[1].pos.y = 0;
-  bodies[1].pos.z = 0;
-  bodies[1].vel.x = 0;
-  bodies[1].vel.y = -0.005;
-  bodies[1].vel.z = 0;
-  bodies[1].mass = 50000000;
-  bodies[1].radius = cbrt(bodies[1].mass / 4 / M_PI * 3);
-  
-  bodies[2].pos.x = -142;
-  bodies[2].pos.y = 0;
-  bodies[2].pos.z = 0;
-  bodies[2].vel.x = 0;
-  bodies[2].vel.y = 0.0102;
-  bodies[2].vel.z = 0;
-  bodies[2].mass = 10000000;
-  bodies[2].radius = cbrt(bodies[2].mass / 4 / M_PI * 3);
-  
-  bodies[3].pos.x = -342;
-  bodies[3].pos.y = 200;
-  bodies[3].pos.z = 0;
-  bodies[3].vel.x = 0.006;
-  bodies[3].vel.y = -0.007;
-  bodies[3].vel.z = 0;
-  bodies[3].mass = 12000000;
-  bodies[3].radius = cbrt(bodies[3].mass / 4 / M_PI * 3);*/
+  printf("%lf\n",timeStep);
+  printf("%lf\n",displayScale);
+  printf("%lf\n",numBodies);
+  fflush(stdout);
+  print_system_info(0);
+  //exit(0);
   
   // Open a new window for drawing.
   gfx_open(win_x_size, win_y_size, "N-Body");
@@ -336,7 +265,7 @@ void *checkForCollisions() {
     if (p.a == -1 && p.b == -1) {
       return NULL;
     } else {
-      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos)) * space_scale;
+      distance = vector3DMag(vector3DSum(negateVector3D(bodies[p.a].pos), bodies[p.b].pos)) * displayScale;
       //printf("%lf\n",distance);fflush(stdout);
       aRad = bodies[p.a].disp_radius;
       bRad = bodies[p.b].disp_radius;
@@ -371,7 +300,7 @@ void *checkForCollisions() {
 
 
 void display_system() {
-  //static double space_scale = 1e-9; // arbitraryish
+  //static double displayScale = 1e-9; // arbitraryish
   gfx_clear();
   gfx_color(255,200,100);
   for (int i=0; i<numBodies; ++i) {
@@ -386,8 +315,8 @@ void display_system() {
 	gfx_color(0,0,255);
     }
     gfx_color(bodies[i].color.r, bodies[i].color.g, bodies[i].color.b);
-    gfx_circle(bodies[i].pos.x*space_scale + win_x_size/2, 
-	       bodies[i].pos.y*space_scale + win_y_size/2, 
+    gfx_circle(bodies[i].pos.x*displayScale + win_x_size/2, 
+	       bodies[i].pos.y*displayScale + win_y_size/2, 
 	       bodies[i].disp_radius);
   }
   gfx_flush();
