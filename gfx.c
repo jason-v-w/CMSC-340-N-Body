@@ -18,24 +18,24 @@ gfx_open creates several X11 objects, and stores them in globals
 for use by the other functions in the library.
 */
 
-static Display *gfx_display=0;
-static Window  gfx_window;
-static GC      gfx_gc;
+static Display *gfx_display = 0;
+static Window   gfx_window;
+static GC       gfx_gc;
 static Colormap gfx_colormap;
 static int      gfx_fast_color_mode = 0;
 
-/* These values are saved by gfx_wait then retrieved later by gfx_xpos and gfx_ypos. */
+// These values are saved by gfx_wait then retrieved later by gfx_xpos and gfx_ypos.
 
 static int saved_xpos = 0;
 static int saved_ypos = 0;
 
-/* Open a new graphics window. */
+// Open a new graphics window.
 
-void gfx_open( int width, int height, const char *title )
+void gfx_open(int width, int height, const char *title)
 {
 	gfx_display = XOpenDisplay(0);
 	if(!gfx_display) {
-		fprintf(stderr,"gfx_open: unable to open the graphics window.\n");
+		fprintf(stderr, "gfx_open: unable to open the graphics window.\n");
 		exit(1);
 	}
 
@@ -78,32 +78,28 @@ void gfx_open( int width, int height, const char *title )
 	}
 }
 
-/* Draw a single point at (x,y) */
+// Draw a single point at (x,y)
 
-void gfx_point( int x, int y )
-{
+void gfx_point( int x, int y ){
 	XDrawPoint(gfx_display,gfx_window,gfx_gc,x,y);
 }
 
-/* Draw a line from (x1,y1) to (x2,y2) */
+// Draw a line from (x1,y1) to (x2,y2) 
 
-void gfx_line( int x1, int y1, int x2, int y2 )
-{
+void gfx_line( int x1, int y1, int x2, int y2 ){
 	XDrawLine(gfx_display,gfx_window,gfx_gc,x1,y1,x2,y2);
 }
 
-/* Draw a circle centered at (x1,y1) with radius r */
+// Draw a circle centered at (x1,y1) with radius r 
 
-void gfx_circle( int x, int y, unsigned int r)
-{
+void gfx_circle( int x, int y, unsigned int r){
 	//XDrawArc(gfx_display,gfx_window,gfx_gc,x-r,y-r,2*r,2*r,0,360*64);
 	XFillArc(gfx_display,gfx_window,gfx_gc,x-r,y-r,2*r,2*r,0,360*64);
 }
 
-/* Change the current drawing color. */
+// Change the current drawing color. 
 
-void gfx_color( int r, int g, int b )
-{
+void gfx_color( int r, int g, int b ){
 	XColor color;
 
 	if(gfx_fast_color_mode) {
@@ -121,17 +117,15 @@ void gfx_color( int r, int g, int b )
 	XSetForeground(gfx_display, gfx_gc, color.pixel);
 }
 
-/* Clear the graphics window to the background color. */
+// Clear the graphics window to the background color. 
 
-void gfx_clear()
-{
+void gfx_clear(){
 	XClearWindow(gfx_display,gfx_window);
 }
 
-/* Change the current background color. */
+// Change the current background color. 
 
-void gfx_clear_color( int r, int g, int b )
-{
+void gfx_clear_color( int r, int g, int b ){
 	XColor color;
 	color.pixel = 0;
 	color.red = r<<8;
@@ -144,33 +138,31 @@ void gfx_clear_color( int r, int g, int b )
 	XChangeWindowAttributes(gfx_display,gfx_window,CWBackPixel,&attr);
 }
 
-int gfx_event_waiting()
-{
-       XEvent event;
+int gfx_event_waiting(){
+    XEvent event;
 
-       gfx_flush();
+    gfx_flush();
 
-       while (1) {
-               if(XCheckMaskEvent(gfx_display,-1,&event)) {
-                       if(event.type==KeyPress) {
-                               XPutBackEvent(gfx_display,&event);
-                               return 1;
-                       } else if (event.type==ButtonPress) {
-                               XPutBackEvent(gfx_display,&event);
-                               return 1;
-                       } else {
-                               return 0;
-                       }
-               } else {
-                       return 0;
-               }
-       }
+    while (1) {
+		if(XCheckMaskEvent(gfx_display,-1,&event)) {
+                if(event.type==KeyPress) {
+                        XPutBackEvent(gfx_display,&event);
+                        return 1;
+                } else if (event.type==ButtonPress) {
+                         XPutBackEvent(gfx_display,&event);
+                         return 1;
+                } else {
+                    return 0;
+                }
+        } else {
+            return 0;
+        }
+    }
 }
 
-/* Wait for the user to press a key or mouse button. */
+// Wait for the user to press a key or mouse button. 
 
-char gfx_wait()
-{
+char gfx_wait(){
 	XEvent event;
 
 	gfx_flush();
@@ -190,22 +182,19 @@ char gfx_wait()
 	}
 }
 
-/* Return the X and Y coordinates of the last event. */
+// Return the X and Y coordinates of the last event.
 
-int gfx_xpos()
-{
+int gfx_xpos(){
 	return saved_xpos;
 }
 
-int gfx_ypos()
-{
+int gfx_ypos(){
 	return saved_ypos;
 }
 
-/* Flush all previous output to the window. */
+// Flush all previous output to the window.
 
-void gfx_flush()
-{
+void gfx_flush(){
 	XFlush(gfx_display);
 }
 

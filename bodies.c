@@ -1,7 +1,6 @@
 #include <math.h>
 #include "bodies.h"
 
-
 /* Given a vector3D, the vector magnitude is returned
  * 
  * @author Jason Vander Woude
@@ -99,7 +98,7 @@ vector3D vector3DScale(vector3D vec, double scale) {
 
 /* Given a vector and scalar, the scaled vector will be returned
  * 
- * @author Jason Vander Woude, Garth
+ * @author Jason Vander Woude & Garth Van Donselaar
  */
 double vector3DMag(vector3D vec) {
   return sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z);
