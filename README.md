@@ -2,6 +2,7 @@
 
 Below are a few design decisions that are odd enough that they deserve
 explanation:
+
       1. Simulation collisions are not based on the actual body
       dimensions but are based on the display dimension to give
       more visual appeal
