@@ -1,3 +1,8 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include "bodies.h"
+#include "filereader.h"
+
 void readFile(char* file, int numBodies, body* addr ){
     FILE * fp;
     char * line = NULL;

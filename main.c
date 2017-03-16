@@ -7,7 +7,7 @@
 #include <float.h> // for DBL_MAX
 #include "gfx.h"
 #include "bodies.h"
-#include "filereader.c"
+#include "filereader.h"
 
 // define constants
 #define NUM_THREADS 40
